@@ -1,0 +1,65 @@
+services:
+
+  order:
+    container_name: order
+    image: service-order:latest
+    ports:
+      - 8080:80
+    environment:
+      - SERVICE_ADDRESS=80
+      - SERVICE_DYNAMOTABLENAME=ordering-app
+      - SERVICE_DYNAMOREGION=eu-west-2
+      - SERVICE_GRPCADDRESS=delivery:50001
+    networks:
+      - backend
+    depends_on:
+      - product
+  delivery:
+    container_name: delivery
+    image: service-delivery:latest
+    ports:
+      - 8081:80
+    environment:
+      - SERVICE_ADDRESS=80 
+      - SERVICE_DYNAMOTABLENAME=ordering-app
+      - SERVICE_DYNAMOREGION=eu-west-2
+      - SERVICE_GRPCADDRESS=delivery:50001
+    networks:
+      - backend
+    depends_on:
+      - order
+  product:
+    container_name: product
+    image: service-product:latest
+    ports:
+      - "8082:80"
+    environment:
+      - DB_HOST=product-db
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_TABLE=ordering-app
+      - SERVICE_PORT=80
+    networks:
+      - backend
+    depends_on:
+      - product-db
+  product-db:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ordering-app
+    networks:
+      - backend
+    volumes:
+      - 'service-product-db:/var/lib/postgresql/data'
+
+networks:
+  backend:
+volumes:
+    service-product-db:
+        driver: local

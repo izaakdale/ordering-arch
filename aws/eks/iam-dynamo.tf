@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "test_oidc_assume_role_policy" {
+data "aws_iam_policy_document" "dynamo_oidc_assume_role_policy" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     effect  = "Allow"
@@ -17,7 +17,7 @@ data "aws_iam_policy_document" "test_oidc_assume_role_policy" {
 }
 
 resource "aws_iam_role" "dynamo_access_oicd" {
-  assume_role_policy = data.aws_iam_policy_document.test_oidc_assume_role_policy.json
+  assume_role_policy = data.aws_iam_policy_document.dynamo_oidc_assume_role_policy.json
   name               = "dynamo-access-oidc"
 }
 
@@ -47,6 +47,6 @@ resource "aws_iam_role_policy_attachment" "dynamo_all_access_attach" {
   policy_arn = aws_iam_policy.dynamo_access_policy.arn
 }
 
-output "test_policy_arn" {
+output "dynamo_policy_arn" {
   value = aws_iam_role.dynamo_access_oicd.arn
 }
